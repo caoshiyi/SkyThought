@@ -89,10 +89,15 @@ class MathTaskHandler(TaskHandler):
         conversations = []
         for problem in data:
             prompt_text = self.generate_prompt(problem[self.get_question_key()])
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
     
     def process_remaining_data(self, train_data, results):
@@ -147,10 +152,15 @@ class AIMETaskHandler(MathTaskHandler):
         conversations = []
         for problem in data:
             prompt_text = self.generate_prompt(problem["problem"], model)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
     
     def load_and_filter_dataset(self, start, end, split="train", source=None, filter_difficulty=False, args=None):
@@ -222,10 +232,15 @@ class GPQADiamondTaskHandler(TaskHandler):
             multiple_choice_string, correct_answer_letter = self.get_multiple_choice_answers(problem)
             problem["Answer"] = correct_answer_letter
             prompt_text = self.generate_prompt(problem["Question"] + "\n" + multiple_choice_string)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def load_and_filter_dataset(self, start, end, split="train", source=None, filter_difficulty=False, args=None):
@@ -284,10 +299,15 @@ class MMLUTaskHandler(TaskHandler):
         for problem in data:
             multiple_choice_string = self.get_multiple_choice_answers(problem)
             prompt_text = self.generate_prompt(problem["question"] + "\n" + multiple_choice_string)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def process_remaining_data(self, train_data, results):
@@ -383,10 +403,15 @@ class NUMINATaskHandler(TaskHandler):
         conversations = []
         for problem in data:
             prompt_text = self.generate_prompt(problem["problem"])
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def load_and_filter_dataset(self, start, end, split="train", source=None, filter_difficulty=False, args=None):
@@ -482,10 +507,15 @@ class APPSTaskHandler(TaskHandler):
             test_case = json.loads(problem["input_output"])
             starter_code = problem["starter_code"]
             prompt_text = self.generate_prompt(test_case, problem["question"], starter_code)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def load_and_filter_dataset(self, start, end, split="train", source=None, filter_difficulty=False, args=None):
@@ -573,10 +603,15 @@ class TACOTaskHandler(TaskHandler):
             except ValueError:
                 fn_name = None
             prompt_text = self.generate_prompt(problem["question"], starter_code, fn_name)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def load_and_filter_dataset(self, start, end, split="train", source=None, filter_difficulty=False, args=None):
@@ -660,10 +695,15 @@ class LiveCodeBenchTaskHandler(TaskHandler):
         conversations = []
         for problem in data:
             prompt_text = self.generate_prompt(problem)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def load_and_filter_dataset(self, start, end, split="test", source=None, filter_difficulty=False, args=None):
@@ -731,10 +771,15 @@ class GSM8KTaskHandler(TaskHandler):
         conversations = []
         for problem in data:
             prompt_text = self.generate_prompt(problem)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def load_and_filter_dataset(self, start, end, split="train", source=None, filter_difficulty=False, args=None):
@@ -823,10 +868,15 @@ class ARCChallengeTaskHandler(TaskHandler):
         conversations = []
         for problem in data:
             prompt_text = self.generate_prompt(problem)
-            conversations.append([
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text}
-            ])
+            if not system_prompt == "":
+                conversations.append([
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt_text}
+                ])
+            else:
+                conversations.append([
+                    {"role": "user", "content": prompt_text}
+                ])
         return conversations
 
     def load_and_filter_dataset(self, start, end, split="train", source=None, filter_difficulty=False, args=None):
