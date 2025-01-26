@@ -41,10 +41,10 @@ def fetch_response_openai(llm, model_name, max_tokens, temp, prompt):
         )
     return response
 
-def perform_inference_and_check(handler: TaskHandler, temperatures, max_tokens, result_file, llm, system_prompt, args):
+def perform_inference_and_check(handler: TaskHandler, temperatures, max_tokens, result_file, llm, system_prompt, source, args):
     results = handler.load_existing_results(result_file)
     print(f"Loaded {len(results)} existing results.")
-    train_data = handler.load_and_filter_dataset(args.start, args.end, split=args.split, source=args.source, \
+    train_data = handler.load_and_filter_dataset(args.start, args.end, split=args.split, source=source, \
                                                  filter_difficulty=args.filter_difficulty, args=args)
     remaining_data = handler.process_remaining_data(train_data, results)
     conversations = handler.make_conversations(remaining_data, system_prompt, args.model)
@@ -152,11 +152,11 @@ def perform_inference_and_check(handler: TaskHandler, temperatures, max_tokens, 
     with open(result_file, 'w', encoding='utf-8') as file:
         json.dump(results, file, ensure_ascii=False, indent=4, cls=NumpyEncoder)
 
-def perform_check(handler: TaskHandler, temperatures, result_file, args):
+def perform_check(handler: TaskHandler, temperatures, result_file, source, args):
     results = handler.load_existing_results(result_file)
     print(f"Loaded {len(results)} existing results.")
 
-    train_data = handler.load_and_filter_dataset(args.start, args.end, split=args.split, source=args.source, \
+    train_data = handler.load_and_filter_dataset(args.start, args.end, split=args.split, source=source, \
                                                  filter_difficulty=args.filter_difficulty, args=args)
     remaining_data = handler.process_remaining_data(train_data, {})
 
@@ -216,10 +216,10 @@ def perform_check(handler: TaskHandler, temperatures, result_file, args):
         json.dump(results, file, ensure_ascii=False, indent=4, cls=NumpyEncoder)
     
 
-def perform_inference_and_save(handler: TaskHandler, temperatures, max_tokens, result_file, llm, system_prompt, args):
+def perform_inference_and_save(handler: TaskHandler, temperatures, max_tokens, result_file, llm, system_prompt, source, args):
     results = handler.load_existing_results(result_file)
     print(f"Loaded {len(results)} existing results.")
-    train_data = handler.load_and_filter_dataset(args.start, args.end, split=args.split, source=args.source, \
+    train_data = handler.load_and_filter_dataset(args.start, args.end, split=args.split, source=source, \
                                                  filter_difficulty=args.filter_difficulty, args=args)
     remaining_data = handler.process_remaining_data(train_data, results)
     conversations = handler.make_conversations(remaining_data, system_prompt, args.model)
@@ -311,7 +311,7 @@ def main():
     parser.add_argument("--tp", type=int, default=8, help="Tensor Parallelism Degree")
     parser.add_argument("--max_tokens", type=int, default=32768, help="Max tokens for the model.")
     parser.add_argument("--split", type=str, default="train", help="Split to use for apps (e.g., train, test).")
-    parser.add_argument("--source", type=str, help="Source for the dataset.")
+    parser.add_argument("--source", type=str, nargs="+", help="Source for the dataset.")
     parser.add_argument("--start", type=int, default=0, help="Start index.")
     parser.add_argument("--end", type=int, default=-1, help="End index.")
     parser.add_argument("--filter-difficulty", action="store_true", help="Filter difficulty.")
@@ -336,30 +336,32 @@ def main():
     # create result dir if not exists
     if args.result_dir and not os.path.exists(args.result_dir):
         os.makedirs(args.result_dir)
-    if args.math_difficulty_lower_bound is not None or  args.math_difficulty_upper_bound is not None:
-        result_file = os.path.join(args.result_dir, f"{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{args.source}_{args.start}_{args.end}_{args.math_difficulty_lower_bound}_{args.math_difficulty_upper_bound}.json")
-    else:
-        result_file = os.path.join(args.result_dir, f"{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{args.source}_{args.start}_{args.end}.json")
-
-    if args.check:
-        # check if converted file exists
-        if args.math_difficulty_lower_bound is not None or args.math_difficulty_upper_bound is not None:
-            converted_file = f"{args.result_dir}/converted_{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{args.source}_{args.start}_{args.end}_{args.math_difficulty_lower_bound}_{args.math_difficulty_upper_bound}.json"
+    
+    for source in args.source:
+        if args.math_difficulty_lower_bound is not None or  args.math_difficulty_upper_bound is not None:
+            result_file = os.path.join(args.result_dir, f"{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{source}_{args.start}_{args.end}_{args.math_difficulty_lower_bound}_{args.math_difficulty_upper_bound}.json")
         else:
-            converted_file = f"{args.result_dir}/converted_{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{args.source}_{args.start}_{args.end}.json"
-        if os.path.exists(converted_file):
-            result_file = converted_file
-        perform_check(handler, temperatures, result_file, args)
-        return
-    elif args.inference:
+            result_file = os.path.join(args.result_dir, f"{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{source}_{args.start}_{args.end}.json")
+
+        if args.check:
+            # check if converted file exists
+            if args.math_difficulty_lower_bound is not None or args.math_difficulty_upper_bound is not None:
+                converted_file = f"{args.result_dir}/converted_{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{source}_{args.start}_{args.end}_{args.math_difficulty_lower_bound}_{args.math_difficulty_upper_bound}.json"
+            else:
+                converted_file = f"{args.result_dir}/converted_{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{source}_{args.start}_{args.end}.json"
+            if os.path.exists(converted_file):
+                result_file = converted_file
+            perform_check(handler, temperatures, result_file, source, args)
+            continue
+        elif args.inference:
+            llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
+            system_prompt = SYSTEM_PROMPT[args.model]
+            perform_inference_and_save(handler, temperatures, max_tokens, result_file, llm, system_prompt, source, args)
+            continue
+
         llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
         system_prompt = SYSTEM_PROMPT[args.model]
-        perform_inference_and_save(handler, temperatures, max_tokens, result_file, llm, system_prompt, args)
-        return
-
-    llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
-    system_prompt = SYSTEM_PROMPT[args.model]
-    perform_inference_and_check(handler, temperatures, max_tokens, result_file, llm, system_prompt, args)
+        perform_inference_and_check(handler, temperatures, max_tokens, result_file, llm, system_prompt, source, args)
 
 if __name__ == "__main__":
     main()
