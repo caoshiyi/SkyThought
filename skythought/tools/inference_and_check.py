@@ -337,6 +337,8 @@ def main():
     if args.result_dir and not os.path.exists(args.result_dir):
         os.makedirs(args.result_dir)
     
+    if not args.check:
+        llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
     for source in args.source:
         if args.math_difficulty_lower_bound is not None or  args.math_difficulty_upper_bound is not None:
             result_file = os.path.join(args.result_dir, f"{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{source}_{args.start}_{args.end}_{args.math_difficulty_lower_bound}_{args.math_difficulty_upper_bound}.json")
@@ -354,12 +356,12 @@ def main():
             perform_check(handler, temperatures, result_file, source, args)
             continue
         elif args.inference:
-            llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
+            # llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
             system_prompt = SYSTEM_PROMPT[args.model]
             perform_inference_and_save(handler, temperatures, max_tokens, result_file, llm, system_prompt, source, args)
             continue
 
-        llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
+        # llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
         system_prompt = SYSTEM_PROMPT[args.model]
         perform_inference_and_check(handler, temperatures, max_tokens, result_file, llm, system_prompt, source, args)
 
