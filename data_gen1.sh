@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the datasets
-datasets=("gsm8k" "amc_aime")
+datasets=("math" "gsm8k" "amc_aime")
 result_dir="./data"
 mkdir -p $result_dir
 # Define the command template
@@ -20,6 +20,6 @@ for dataset in "${datasets[@]}"; do
     echo "Processing dataset: $dataset"
     echo "Command: $command"
     # Execute the command and redirect output to the log file
-    $command > $log_file 2>&1
+    $command
     echo "Finished processing dataset: $dataset. Logs saved to $log_file"
 done
