@@ -99,7 +99,7 @@ def perform_inference_and_check(handler: TaskHandler, temperatures, max_tokens, 
                         results[problem_key]["messages"] = ""
                     results[problem_key]["responses"] = {}
                     results[problem_key]["token_usages"] = {}
-                    prompt = conversations[idx][1]["content"]
+                    prompt = conversations[idx][-1]["content"]
                     results[problem_key]["prompt"] = prompt
                     results[problem_key]["input_conversation"] = conversations[idx]
                     
@@ -266,7 +266,7 @@ def perform_inference_and_save(handler: TaskHandler, temperatures, max_tokens, r
                     results[problem_key]["messages"] = ""
                 results[problem_key]["responses"] = {}
                 results[problem_key]["token_usages"] = {}
-                prompt = conversations[idx][1]["content"]
+                prompt = conversations[idx][-1]["content"]
                 results[problem_key]["prompt"] = prompt
 
             results[problem_key]["responses"][str(temp)] = response_entries
