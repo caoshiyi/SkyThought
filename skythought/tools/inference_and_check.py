@@ -339,6 +339,8 @@ def main():
     
     if not args.check:
         llm = OpenAI() if args.model.startswith("openai") else LLM(model=args.model, tensor_parallel_size=args.tp)
+    if not args.source:
+        args.source = [None]
     for source in args.source:
         if args.math_difficulty_lower_bound is not None or  args.math_difficulty_upper_bound is not None:
             result_file = os.path.join(args.result_dir, f"{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{source}_{args.start}_{args.end}_{args.math_difficulty_lower_bound}_{args.math_difficulty_upper_bound}.json")
