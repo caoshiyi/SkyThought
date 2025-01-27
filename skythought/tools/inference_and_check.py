@@ -342,6 +342,7 @@ def main():
     if not args.source:
         args.source = [None]
     for source in args.source:
+        name = MODEL_TO_NAME[args.model] if args.model in MODEL_TO_NAME else args.model.split("/")[-1]
         if args.math_difficulty_lower_bound is not None or  args.math_difficulty_upper_bound is not None:
             result_file = os.path.join(args.result_dir, f"{MODEL_TO_NAME[args.model]}_{args.dataset}_{args.split}_{source}_{args.start}_{args.end}_{args.math_difficulty_lower_bound}_{args.math_difficulty_upper_bound}.json")
         else:
